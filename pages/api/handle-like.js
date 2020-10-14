@@ -1,22 +1,16 @@
 import client from "../../sanityClient";
 
-client.config({ token: process.env.SANITY_WRITE });
+client.config({ token: process.env.SANITY_WRITE_TOKEN });
 
 export default async function handleLike(req, res) {
-  console.log(JSON.parse(req.body));
   const { _id } = JSON.parse(req.body);
-  console.log(_id);
-  const doc = { _id: _id, _type: "page" };
-
-  const result = await client.createIfNotExists(doc).then((res) => {
-    return client
-      .patch(res._id)
-      .setIfMissing({ likes: 0 })
-      .inc({ likes: 1 })
-      .commit();
-  });
+  const data = await client
+    .patch(_id) // pick the document were gonna update (patch means update)
+    .inc({ likes: 1 }) // increment by 1
+    .commit(); // save. persist the data to database
 
   res.statusCode = 200;
-  res.json({ likes: result.likes });
+  res.json({ likes: data.likes });
+
   return res;
 }
